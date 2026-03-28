@@ -26,34 +26,43 @@ export default async function DashboardPage() {
   const monthStart = startOfMonth();
   const dayStart = startOfDay();
 
-  const [[{ totalClients }], [{ newClientsMonth }], [{ payeMonth }], [{ payeToday }]] =
-    await Promise.all([
-      db.select({ totalClients: count() }).from(clients),
-      db
-        .select({ newClientsMonth: count() })
-        .from(clients)
-        .where(gte(clients.createdAt, monthStart)),
-      db
-        .select({ payeMonth: sum(caisseEntries.montant) })
-        .from(caisseEntries)
-        .where(
-          and(
-            eq(caisseEntries.direction, "paye"),
-            gte(caisseEntries.createdAt, monthStart),
-          ),
+  const [
+    clientsTotalRows,
+    clientsMonthRows,
+    payeMonthRows,
+    payeTodayRows,
+  ] = await Promise.all([
+    db.select({ totalClients: count() }).from(clients),
+    db
+      .select({ newClientsMonth: count() })
+      .from(clients)
+      .where(gte(clients.createdAt, monthStart)),
+    db
+      .select({ payeMonth: sum(caisseEntries.montant) })
+      .from(caisseEntries)
+      .where(
+        and(
+          eq(caisseEntries.direction, "paye"),
+          gte(caisseEntries.createdAt, monthStart),
         ),
-      db
-        .select({ payeToday: sum(caisseEntries.montant) })
-        .from(caisseEntries)
-        .where(
-          and(
-            eq(caisseEntries.direction, "paye"),
-            gte(caisseEntries.createdAt, dayStart),
-          ),
+      ),
+    db
+      .select({ payeToday: sum(caisseEntries.montant) })
+      .from(caisseEntries)
+      .where(
+        and(
+          eq(caisseEntries.direction, "paye"),
+          gte(caisseEntries.createdAt, dayStart),
         ),
-    ]);
+      ),
+  ]);
 
-  const [[{ enStock }], [{ vendu }], lowStock] = await Promise.all([
+  const totalClients = Number(clientsTotalRows[0]?.totalClients ?? 0);
+  const newClientsMonth = Number(clientsMonthRows[0]?.newClientsMonth ?? 0);
+  const payeMonth = payeMonthRows[0]?.payeMonth;
+  const payeToday = payeTodayRows[0]?.payeToday;
+
+  const [enStockRows, venduRows, lowStock] = await Promise.all([
     db
       .select({ enStock: sum(stockItems.quantite) })
       .from(stockItems)
@@ -68,6 +77,9 @@ export default async function DashboardPage() {
       .where(eq(stockItems.statut, "en_stock"))
       .then((rows) => rows.filter((r) => r.quantite <= 2).slice(0, 6)),
   ]);
+
+  const enStock = enStockRows[0]?.enStock;
+  const vendu = Number(venduRows[0]?.vendu ?? 0);
 
   const debtors = role === "admin" ? await topDebtors(db, 6) : [];
 

@@ -18,11 +18,9 @@ const entrySchema = z.object({
   note: z.string().max(500).optional().nullable(),
 });
 
-export async function createCaisseEntryAction(
-  formData: FormData,
-): Promise<{ error?: string } | void> {
+export async function createCaisseEntryAction(formData: FormData): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Non authentifié" };
+  if (!session?.user?.id) return;
 
   const clientRaw = formData.get("clientId");
   const clientId =
@@ -37,10 +35,10 @@ export async function createCaisseEntryAction(
     reference: emptyToNull(formData.get("reference")),
     note: emptyToNull(formData.get("note")),
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   if (parsed.data.direction === "doit" && !parsed.data.clientId) {
-    return { error: "Un client est requis pour une créance" };
+    return;
   }
 
   const db = getDb();

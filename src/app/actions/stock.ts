@@ -18,11 +18,9 @@ const stockSchema = z.object({
   clientId: z.string().min(1).nullable().optional(),
 });
 
-export async function createStockAction(
-  formData: FormData,
-): Promise<{ error?: string } | void> {
+export async function createStockAction(formData: FormData): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Non authentifié" };
+  if (!session?.user?.id) return;
 
   const clientRaw = formData.get("clientId");
   const clientId =
@@ -36,7 +34,7 @@ export async function createStockAction(
     prixVente: formData.get("prixVente"),
     clientId,
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   const db = getDb();
   const [row] = await db
@@ -63,9 +61,9 @@ export async function createStockAction(
 export async function updateStockAction(
   itemId: string,
   formData: FormData,
-): Promise<{ error?: string } | void> {
+): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Non authentifié" };
+  if (!session?.user?.id) return;
 
   const clientRaw = formData.get("clientId");
   const clientId =
@@ -79,7 +77,7 @@ export async function updateStockAction(
     prixVente: formData.get("prixVente"),
     clientId,
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   const db = getDb();
   await db

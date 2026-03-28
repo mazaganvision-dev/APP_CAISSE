@@ -50,10 +50,10 @@ const ruleSchema = z.object({
 
 export async function upsertNotificationRuleAction(
   formData: FormData,
-): Promise<{ error?: string } | void> {
+): Promise<void> {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "admin") {
-    return { error: "Refusé" };
+    return;
   }
 
   const parsed = ruleSchema.safeParse({
@@ -61,12 +61,12 @@ export async function upsertNotificationRuleAction(
     valueJson: formData.get("valueJson"),
     enabled: formData.get("enabled") === "on" ? true : false,
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   try {
     JSON.parse(parsed.data.valueJson);
   } catch {
-    return { error: "JSON invalide" };
+    return;
   }
 
   const db = getDb();

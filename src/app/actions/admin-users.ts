@@ -17,12 +17,10 @@ const createUserSchema = z.object({
   role: z.enum(["admin", "worker"]),
 });
 
-export async function createUserAction(
-  formData: FormData,
-): Promise<{ error?: string } | void> {
+export async function createUserAction(formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "admin") {
-    return { error: "Refusé" };
+    return;
   }
 
   const parsed = createUserSchema.safeParse({
@@ -31,7 +29,7 @@ export async function createUserAction(
     name: formData.get("name"),
     role: formData.get("role"),
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   const db = getDb();
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
@@ -43,7 +41,7 @@ export async function createUserAction(
       role: parsed.data.role as UserRole,
     });
   } catch {
-    return { error: "Email déjà utilisé" };
+    return;
   }
 
   await logAudit(db, {

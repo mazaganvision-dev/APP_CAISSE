@@ -56,9 +56,22 @@ Ajustez les en-têtes pour correspondre aux colonnes documentées dans `scripts/
 ## Déploiement Vercel
 
 1. Projet GitHub connecté à Vercel.
-2. Variables d’environnement : mêmes clés que `.env.example` (Turso + `AUTH_SECRET` + `CRON_SECRET`).
-3. Après le premier déploiement, exécutez `npm run db:push` **contre la base Turso de prod** depuis une machine de confiance (ou intégrez un job CI sécurisé), puis `npm run seed` si nécessaire.
-4. Le cron défini dans `vercel.json` appelle `GET /api/cron/notifications` avec `Authorization: Bearer <CRON_SECRET>` (comportement Vercel Cron).
+2. **Variables d’environnement** (Production, et Preview si besoin) : comme `.env.example` — au minimum `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, **`AUTH_SECRET`** (obligatoire pour les sessions), `CRON_SECRET` (pour le cron).
+3. **Commande de build** : dans Vercel → Projet → **Settings** → **General** → **Build & Development Settings**, remplacez la commande de build par :
+   ```bash
+   npm run vercel-build
+   ```
+   Ce script exécute `drizzle-kit push` (synchronise le schéma sur Turso) puis `next build`. Les identifiants Turso doivent donc être présents **avant** le build.
+4. **Une seule fois après le premier déploiement réussi** : créez les comptes initiaux depuis une machine de confiance, avec les **mêmes** variables Turso que sur Vercel (ou `vercel env pull`) :
+   ```bash
+   set SEED_ADMIN_PASSWORD=...
+   set SEED_WORKER_PASSWORD=...
+   npm run seed
+   ```
+   Ne lancez pas `seed` à chaque déploiement.
+5. Le cron défini dans `vercel.json` appelle `GET /api/cron/notifications` avec `Authorization: Bearer <CRON_SECRET>` (comportement Vercel Cron).
+
+En local, `npm run build` suffit pour vérifier l’application ; `npm run vercel-build` nécessite un accès réseau à Turso (comme sur Vercel).
 
 ## WhatsApp (phase 2)
 

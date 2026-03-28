@@ -22,11 +22,9 @@ const clientSchema = z.object({
   medecinTraitant: z.string().optional().nullable(),
 });
 
-export async function createClientAction(
-  formData: FormData,
-): Promise<{ error?: string } | void> {
+export async function createClientAction(formData: FormData): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Non authentifié" };
+  if (!session?.user?.id) return;
 
   const parsed = clientSchema.safeParse({
     nom: formData.get("nom"),
@@ -40,7 +38,7 @@ export async function createClientAction(
     referenceMonture: emptyToNull(formData.get("referenceMonture")),
     medecinTraitant: emptyToNull(formData.get("medecinTraitant")),
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   const db = getDb();
   const [row] = await db
@@ -66,9 +64,9 @@ export async function createClientAction(
 export async function updateClientAction(
   clientId: string,
   formData: FormData,
-): Promise<{ error?: string } | void> {
+): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Non authentifié" };
+  if (!session?.user?.id) return;
 
   const parsed = clientSchema.safeParse({
     nom: formData.get("nom"),
@@ -82,7 +80,7 @@ export async function updateClientAction(
     referenceMonture: emptyToNull(formData.get("referenceMonture")),
     medecinTraitant: emptyToNull(formData.get("medecinTraitant")),
   });
-  if (!parsed.success) return { error: "Données invalides" };
+  if (!parsed.success) return;
 
   const db = getDb();
   await db

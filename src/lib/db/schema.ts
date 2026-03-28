@@ -53,10 +53,10 @@ export const clients = sqliteTable(
     createdById: text("created_by_id").references(() => users.id),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+      .$defaultFn(() => new Date()),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+      .$defaultFn(() => new Date()),
   },
   (t) => [
     index("clients_telephone_idx").on(t.telephone),
@@ -82,7 +82,7 @@ export const caisseEntries = sqliteTable(
     createdById: text("created_by_id").references(() => users.id),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+      .$defaultFn(() => new Date()),
   },
   (t) => [
     index("caisse_client_idx").on(t.clientId),
@@ -107,10 +107,10 @@ export const stockItems = sqliteTable(
     createdById: text("created_by_id").references(() => users.id),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+      .$defaultFn(() => new Date()),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+      .$defaultFn(() => new Date()),
   },
   (t) => [
     index("stock_marque_ref_idx").on(t.marqueMonture, t.referenceMonture),
@@ -127,7 +127,7 @@ export const notificationRules = sqliteTable("notification_rules", {
   enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+    .$defaultFn(() => new Date()),
 });
 
 export const notifications = sqliteTable(
