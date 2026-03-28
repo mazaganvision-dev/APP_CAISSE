@@ -57,11 +57,13 @@ Ajustez les en-têtes pour correspondre aux colonnes documentées dans `scripts/
 
 1. Projet GitHub connecté à Vercel.
 2. **Variables d’environnement** (Production, et Preview si besoin) : comme `.env.example` — au minimum `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, **`AUTH_SECRET`** (obligatoire pour les sessions), `CRON_SECRET` (pour le cron).
+   - **Noms exacts** : `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN` (souvent la cause de `url: undefined` si le nom diffère ou si la variable n’existe que pour un autre environnement).
+   - **Variables « Sensitive » sur Vercel** : elles peuvent être **exclues de l’étape de build**. Comme `npm run vercel-build` lance `drizzle-kit push` pendant le build, ces deux variables doivent être visibles au build. Soit vous ne les marquez pas comme Sensitive, soit vous mettez la commande de build sur `npm run build` et vous exécutez **`npm run db:push`** une fois en local avec les identifiants de prod.
 3. **Commande de build** : dans Vercel → Projet → **Settings** → **General** → **Build & Development Settings**, remplacez la commande de build par :
    ```bash
    npm run vercel-build
    ```
-   Ce script exécute `drizzle-kit push` (synchronise le schéma sur Turso) puis `next build`. Les identifiants Turso doivent donc être présents **avant** le build.
+   Ce script vérifie la présence de Turso, exécute `drizzle-kit push` puis `next build`. Si un message d’erreur détaillé s’affiche, suivez les indications (variables manquantes ou réservées au runtime).
 4. **Une seule fois après le premier déploiement réussi** : créez les comptes initiaux depuis une machine de confiance, avec les **mêmes** variables Turso que sur Vercel (ou `vercel env pull`) :
    ```bash
    set SEED_ADMIN_PASSWORD=...
